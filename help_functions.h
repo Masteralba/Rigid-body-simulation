@@ -30,13 +30,10 @@ void print_matrix(double* matrix);
 double compute_mass_tetrahedron(double density, double* R);
 
 // Вычисление тензора инерции тетраэдра
-void calculateTetrahedronInertia(double vertices[4][3], double density, double inertia_tensor[9]);
+void calculateTetrahedronInertia(double* a_v, double* b_v, double* c_v, double* d_v, double density, double inertia_tensor[9]);
 
 // Транспонирование матрицы 3x3 
 void matrix_3x3_transpose(double* matrix, double* res);
-
-// Вычисление матрицы перекоса
-void Star(double* a, double* res);
 
 // Численное решение ОДУ (Рунге-Кутта 4)
 void ode(Rk4* self, double* x, double* xFinal, int n, double t0, double t1, 

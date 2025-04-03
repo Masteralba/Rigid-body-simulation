@@ -54,6 +54,7 @@ void update(int value) {
 
 
     double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
+    // Расчет кинетической энергии вращения
 
     printf("%.15e\n", en);
 

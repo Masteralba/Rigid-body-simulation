@@ -179,46 +179,38 @@ void InitStates(RigidBody* Bodies)
     //double c[3] = {0, 1, 1/sqrt(2)};
     //double d[3] = {0, -1, 1/sqrt(2)};
 
-    Bodies[0].x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;
-    Bodies[0].x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // Расчет координат центра масс ()
-    Bodies[0].x[2] = (a[2] + b[2] + c[2] + d[2]) / 4;
+    Bodies[0].x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
+    Bodies[0].x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // в системе координат
+    Bodies[0].x[2] = (a[2] + b[2] + c[2] + d[2]) / 4;  // связанной с телом
 
     for(int i=0; i<3; i++)
     {
         Bodies[0].a_vertex[i] = a[i] - Bodies[0].x[i];
-        Bodies[0].b_vertex[i] = b[i] - Bodies[0].x[i];
-        Bodies[0].c_vertex[i] = c[i] - Bodies[0].x[i];
-        Bodies[0].d_vertex[i] = d[i] - Bodies[0].x[i];
+        Bodies[0].b_vertex[i] = b[i] - Bodies[0].x[i]; // Расчет координат
+        Bodies[0].c_vertex[i] = c[i] - Bodies[0].x[i]; // вершин в системе координат
+        Bodies[0].d_vertex[i] = d[i] - Bodies[0].x[i]; // связанной с телом
     }
 
-
-    double* vertices[4] = {a, b, c, d};
-
-    
-
-    double new_vertices[4][3];
-
-    for ( int i=0; i<4; i++)
-        for (int j=0; j<3; j++)
-            new_vertices[i][j] = vertices[i][j] - Bodies[0].x[j];
-
-    double density = 10;
-
+    double density = 10;  // Плотность
 
     double R[9];
     compute_R(a, b, c, d, R);
     Bodies[0].mass = compute_mass_tetrahedron(density, R); // Считаем плотность равную 1
-    calculateTetrahedronInertia(new_vertices, density, Bodies[0].Ibody);  // 1.209223790272714e-07
-    //compute_Ibody_tetrahedron(a, b, c, d, Bodies[0].mass, Bodies[0].Ibody); //1.942441266794799e-07
-    matrix_3x3_inverse(Bodies[0].Ibody, Bodies[0].Ibodyinv);
+
+    calculateTetrahedronInertia(Bodies[0].a_vertex, Bodies[0].b_vertex,
+    Bodies[0].c_vertex, Bodies[0].d_vertex, density, Bodies[0].Ibody);  // Расчет тензора инерции
+
+    matrix_3x3_inverse(Bodies[0].Ibody, Bodies[0].Ibodyinv);  // Расчет инвертированного тензора инерции
 
 
+    // Начальные значения кватерниона
     Bodies[0].q.s = 1;
 
     Bodies[0].q.v[0] = 0;
     Bodies[0].q.v[1] = 0;
     Bodies[0].q.v[2] = 0;
 
+    // Начальные значения момента силы
     Bodies[0].L[0] = 0.0008;
     Bodies[0].L[1] = 0.000;
     Bodies[0].L[2] = 0.000;

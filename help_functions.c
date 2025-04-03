@@ -114,21 +114,6 @@ void matrix_3x3_transpose(double* matrix, double* res)
     res[8] = matrix[8];
 }
 
-void Star(double* a, double* res)
-{
-    res[0] = 0;
-    res[1] = -a[2];
-    res[2] = a[1];
-
-    res[3] = a[2];
-    res[4] = 0;
-    res[5] = -a[0];
-
-    res[6] = -a[1];
-    res[7] = a[0];
-    res[8] = 0;
-}
-
 void ode(Rk4* self, double* x, double* xFinal, int n, double t0, double t1, void (*f)(double, double*, double*, void*), void* data)
 {
 
@@ -264,14 +249,12 @@ void quaternionToMatrix(quaternion q, double* res)
 }
 
 
-
-
-void calculateTetrahedronInertia(double vertices[4][3], double density, double inertia_tensor[9]) {
+void calculateTetrahedronInertia(double* a_v, double* b_v, double* c_v, double* d_v, double density, double inertia_tensor[9]) {
     // Извлекаем координаты вершин
-    double x1 = vertices[0][0], y1 = vertices[0][1], z1 = vertices[0][2];
-    double x2 = vertices[1][0], y2 = vertices[1][1], z2 = vertices[1][2];
-    double x3 = vertices[2][0], y3 = vertices[2][1], z3 = vertices[2][2];
-    double x4 = vertices[3][0], y4 = vertices[3][1], z4 = vertices[3][2];
+    double x1 = a_v[0], y1 = a_v[1], z1 = a_v[2];
+    double x2 = b_v[0], y2 = b_v[1], z2 = b_v[2];
+    double x3 = c_v[0], y3 = c_v[1], z3 = c_v[2];
+    double x4 = d_v[0], y4 = d_v[1], z4 = d_v[2];
     
     // Вычисляем элементы матрицы Якоби
     double j11 = x2 - x1, j12 = x3 - x1, j13 = x4 - x1;
