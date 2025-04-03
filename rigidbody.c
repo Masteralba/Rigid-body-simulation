@@ -1,0 +1,226 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "struct.h"
+#include "help_functions.h"
+#include "rigitbody.h"
+
+/* Copy the state information into an array */
+void StateToArray(RigidBody *rb, double *y)
+{
+    *y++ = rb->x[0]; /* x component of position */
+    *y++ = rb->x[1]; /* etc. */
+    *y++ = rb->x[2];
+
+    *y++ = rb->q.s;
+    *y++ = rb->q.v[0];
+    *y++ = rb->q.v[1];
+    *y++ = rb->q.v[2];
+
+    *y++ = rb->P[0];
+    *y++ = rb->P[1]; 
+    *y++ = rb->P[2];
+
+    *y++ = rb->L[0];
+    *y++ = rb->L[1];
+    *y++ = rb->L[2];
+}
+
+/* Copy information from an array into the state variables */
+void ArrayToState(RigidBody *rb, double *y)
+{
+    rb->x[0] = *y++;
+    rb->x[1] = *y++;
+    rb->x[2] = *y++;
+
+    rb->q.s = *y++;
+    rb->q.v[0] = *y++;
+    rb->q.v[1] = *y++;
+    rb->q.v[2] = *y++;
+
+    rb->P[0] = *y++;
+    rb->P[1] = *y++;
+    rb->P[2] = *y++;
+
+    rb->L[0] = *y++;
+    rb->L[1] = *y++;
+    rb->L[2] = *y++;
+
+    /* Compute auxiliary variables... */
+
+
+    quaternion_normalize(&rb->q);  // Нормализуем кватернион
+
+    quaternionToMatrix(rb->q, rb->R);  // Считаем матрицу поворота
+
+    /* v(t) = P(t) M */
+    for (int i=0; i<3; i++)
+        rb->v[i] = rb->P[i] / rb->mass;
+
+    /* I−1(t) = R(t)I−1 bodyR(t)T*/
+
+    double temp[9];
+    matrix_3x3_multiply(rb->R, rb->Ibodyinv, temp);
+    double R_transpose[9];
+    matrix_3x3_transpose(rb->R, R_transpose);
+    matrix_3x3_multiply(temp, R_transpose, rb->Iinv);
+
+    /* ω(t) = I−1(t)L(t) */
+    matrix_triple_multiply(rb->Iinv, rb->L, rb->omega);
+}
+
+
+void ArrayToBodies(double x[], RigidBody* Bodies, int NBODIES)
+{
+    for(int i = 0; i < NBODIES; i++)
+        ArrayToState(&Bodies[i], &x[i * STATE_SIZE]);
+}
+
+
+void BodiesToArray(double x[], RigidBody* Bodies, int NBODIES)
+{
+    for(int i = 0; i < NBODIES; i++)
+        StateToArray(&Bodies[i], &x[i * STATE_SIZE]);
+}
+
+
+void ComputeForceAndTorque(double t, RigidBody *rb) // записываем какие силы действуют в момент времени t, пока силы - константы
+{
+    rb->force[0] = 0.0;
+    rb->force[1] = 0.0;
+    rb->force[2] = 0.0;
+
+    rb->torque[0] = 0.0;
+    rb->torque[1] = 0.0;
+    rb->torque[2] = 0.0;
+}
+
+void DdtStateToArray(RigidBody *rb, double *xdot)
+{
+    /* copy d/dt x(t) = v(t) into xdot */
+    *xdot++ = rb->v[0];
+    *xdot++ = rb->v[1];
+    *xdot++ = rb->v[2];
+
+    quaternion qdot;
+
+    qdot.s = 0;
+    qdot.v[0] = 0;
+    qdot.v[1] = 0;
+    qdot.v[2] = 0;
+
+
+    quaternion omega_quat;
+
+    omega_quat.s = 0;
+
+    omega_quat.v[0] = rb->omega[0];
+    omega_quat.v[1] = rb->omega[1];
+    omega_quat.v[2] = rb->omega[2];
+
+    quaternion_multiplication(rb->q, omega_quat, &qdot);   // dq/dt = 0.5*omega*q
+
+    qdot.s *= 0.5;
+    qdot.v[0] *= 0.5;
+    qdot.v[1] *= 0.5;
+    qdot.v[2] *= 0.5;
+    
+    *xdot++ = qdot.s;
+    *xdot++ = qdot.v[0];
+    *xdot++ = qdot.v[1];
+    *xdot++ = qdot.v[2];
+
+    *xdot++ = rb->force[0]; /* d/dt P(t) = F(t) */
+    *xdot++ = rb->force[1];
+    *xdot++ = rb->force[2];
+
+    *xdot++ = rb->torque[0]; /* ddt L(t) = τ(t) */
+    *xdot++ = rb->torque[1];
+    *xdot++ = rb->torque[2];
+}
+
+void Dxdt(double t, double x[], double xdot[], void* data)
+{
+    // Приводим data к типу SimulationData*
+    struct SimulationData* simData = (struct SimulationData*)data;
+
+    // Извлекаем Bodies и NBODIES
+    RigidBody* Bodies = simData->Bodies;
+    int NBODIES = simData->NBODIES;
+
+    /* put data in x[] into Bodies[] */
+    ArrayToBodies(x, Bodies, NBODIES);
+    for(int i = 0; i < NBODIES; i++)
+    {
+        ComputeForceAndTorque(t, &Bodies[i]);
+        DdtStateToArray(&Bodies[i], &xdot[i * STATE_SIZE]);
+    }
+}
+
+void InitStates(RigidBody* Bodies)
+{
+    // Вершины неправильного тетраэдра
+    double a[3] = {0.5, 0.5, 0};
+    double b[3] = {0.5, 0, 0};
+    double c[3] = {0, 0, 0};
+    double d[3] = {0.5, 0.5, -0.5};
+
+    // С этими данными можно сравнить пример расчета тензора инерции из статьи
+    //double a[3] = {8.3322, -11.86875, 0.93355};
+    //double b[3] = {0.75523, 5., 16.37072};
+    //double c[3] = {52.61236, 5., -5.38580};
+    //double d[3] = {2., 5., 3.}; 
+
+    //platonic tetrahedron
+
+    //double a[3] = {1, 0, -1/sqrt(2)};
+    //double b[3] = {-1, 0, -1/sqrt(2)};
+    //double c[3] = {0, 1, 1/sqrt(2)};
+    //double d[3] = {0, -1, 1/sqrt(2)};
+
+    Bodies[0].x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;
+    Bodies[0].x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // Расчет координат центра масс ()
+    Bodies[0].x[2] = (a[2] + b[2] + c[2] + d[2]) / 4;
+
+    for(int i=0; i<3; i++)
+    {
+        Bodies[0].a_vertex[i] = a[i] - Bodies[0].x[i];
+        Bodies[0].b_vertex[i] = b[i] - Bodies[0].x[i];
+        Bodies[0].c_vertex[i] = c[i] - Bodies[0].x[i];
+        Bodies[0].d_vertex[i] = d[i] - Bodies[0].x[i];
+    }
+
+
+    double* vertices[4] = {a, b, c, d};
+
+    
+
+    double new_vertices[4][3];
+
+    for ( int i=0; i<4; i++)
+        for (int j=0; j<3; j++)
+            new_vertices[i][j] = vertices[i][j] - Bodies[0].x[j];
+
+    double density = 10;
+
+
+    double R[9];
+    compute_R(a, b, c, d, R);
+    Bodies[0].mass = compute_mass_tetrahedron(density, R); // Считаем плотность равную 1
+    calculateTetrahedronInertia(new_vertices, density, Bodies[0].Ibody);  // 1.209223790272714e-07
+    //compute_Ibody_tetrahedron(a, b, c, d, Bodies[0].mass, Bodies[0].Ibody); //1.942441266794799e-07
+    matrix_3x3_inverse(Bodies[0].Ibody, Bodies[0].Ibodyinv);
+
+
+    Bodies[0].q.s = 1;
+
+    Bodies[0].q.v[0] = 0;
+    Bodies[0].q.v[1] = 0;
+    Bodies[0].q.v[2] = 0;
+
+    Bodies[0].L[0] = 0.0008;
+    Bodies[0].L[1] = 0.000;
+    Bodies[0].L[2] = 0.000;
+
+}
