@@ -7,7 +7,7 @@
 #include "rigitbody.h"
 #include "visual.hpp"
 
-#define NBODIES 1 // Количество тел в симуляции
+#define NBODIES 2 // Количество тел в симуляции
 
 RigidBody Bodies[NBODIES]; // Глобальный массив тел
 
@@ -30,7 +30,8 @@ void RenderScene() // Находится здесь, потому что тре�
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_color);
 
     glDisable(GL_LIGHTING);
-    DrawBody(Bodies[0]);  // Использование глобальной переменной
+    DrawTetrahedron(Bodies[0]);  // Использование глобальной переменной
+    DrawPlane(Bodies[1]);
     glEnable(GL_LIGHTING);
     DrawAxes();
 
@@ -56,7 +57,7 @@ void update(int value) {
     double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
     // Расчет кинетической энергии вращения
 
-    printf("%.15e\n", en);
+    //printf("%.15e\n", en);
 
     // Выполняем один шаг симуляции
     for (int i = 0; i < STATE_SIZE * NBODIES; i++)

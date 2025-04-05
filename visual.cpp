@@ -47,7 +47,7 @@ void DrawAngularVelocity(const RigidBody& body) {
     glEnable(GL_LIGHTING);
 }
 
-void DrawBody(const RigidBody& body) 
+void DrawTetrahedron(const RigidBody& body) 
 {
     glPushMatrix();
     glTranslatef(body.x[0], body.x[1], body.x[2]);
@@ -106,7 +106,47 @@ void DrawBody(const RigidBody& body)
 
     glPopMatrix();
 
-    DrawAngularVelocity(body);
+    //DrawAngularVelocity(body);
+}
+
+
+void DrawPlane(const RigidBody& body) 
+{
+    glPushMatrix();
+    
+    // Размер плоскости
+    const float size = 10.0f;
+    // Количество клеток
+    const int divisions = 10;
+    // Размер одной клетки
+    const float step = size / divisions;
+    
+    // Основной цвет плоскости (серый)
+    GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    
+    // Рисуем разметку (белые линии)
+    glDisable(GL_LIGHTING);
+    glBegin(GL_LINES);
+    glColor3fv(white);
+    
+    // Горизонтальные линии
+    for(int i = 0; i <= divisions; ++i) {
+        float y = -size/2 + i * step;
+        glVertex3f(-size/2, y, 0); // Немного приподнимаем линии над плоскостью
+        glVertex3f(size/2, y, 0);
+    }
+    
+    // Вертикальные линии
+    for(int i = 0; i <= divisions; ++i) {
+        float x = -size/2 + i * step;
+        glVertex3f(x, -size/2, 0);
+        glVertex3f(x, size/2, 0);
+    }
+    
+    glEnd();
+    glEnable(GL_LIGHTING);
+    
+    glPopMatrix();
 }
 
 void DrawAxes() 

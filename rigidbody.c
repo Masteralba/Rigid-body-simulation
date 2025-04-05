@@ -158,13 +158,13 @@ void Dxdt(double t, double x[], double xdot[], void* data)
     }
 }
 
-void InitStates(RigidBody* Bodies)
+void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    double a[3] = {0.5, 0.5, 0};
-    double b[3] = {0.5, 0, 0};
-    double c[3] = {0, 0, 0};
-    double d[3] = {0.5, 0.5, -0.5};
+    double a[3] = {0.5, 0.5, 1.6};
+    double b[3] = {0.5, 0, 1};
+    double c[3] = {0, 0, 1};
+    double d[3] = {0.5, 0.2, 0.5};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -179,40 +179,56 @@ void InitStates(RigidBody* Bodies)
     //double c[3] = {0, 1, 1/sqrt(2)};
     //double d[3] = {0, -1, 1/sqrt(2)};
 
-    Bodies[0].x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
-    Bodies[0].x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // в системе координат
-    Bodies[0].x[2] = (a[2] + b[2] + c[2] + d[2]) / 4;  // связанной с телом
+    Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
+    Body->x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // в системе координат
+    Body->x[2] = (a[2] + b[2] + c[2] + d[2]) / 4;  // связанной с телом
 
     for(int i=0; i<3; i++)
     {
-        Bodies[0].a_vertex[i] = a[i] - Bodies[0].x[i];
-        Bodies[0].b_vertex[i] = b[i] - Bodies[0].x[i]; // Расчет координат
-        Bodies[0].c_vertex[i] = c[i] - Bodies[0].x[i]; // вершин в системе координат
-        Bodies[0].d_vertex[i] = d[i] - Bodies[0].x[i]; // связанной с телом
+        Body->a_vertex[i] = a[i] - Body->x[i];
+        Body->b_vertex[i] = b[i] - Body->x[i]; // Расчет координат
+        Body->c_vertex[i] = c[i] - Body->x[i]; // вершин в системе координат
+        Body->d_vertex[i] = d[i] - Body->x[i]; // связанной с телом
     }
 
     double density = 10;  // Плотность
 
     double R[9];
     compute_R(a, b, c, d, R);
-    Bodies[0].mass = compute_mass_tetrahedron(density, R); // Считаем плотность равную 1
+    Body->mass = compute_mass_tetrahedron(density, R); // Считаем плотность равную 1
 
-    calculateTetrahedronInertia(Bodies[0].a_vertex, Bodies[0].b_vertex,
-    Bodies[0].c_vertex, Bodies[0].d_vertex, density, Bodies[0].Ibody);  // Расчет тензора инерции
+    calculateTetrahedronInertia(Body->a_vertex, Body->b_vertex,
+    Body->c_vertex, Body->d_vertex, density, Body->Ibody);  // Расчет тензора инерции
 
-    matrix_3x3_inverse(Bodies[0].Ibody, Bodies[0].Ibodyinv);  // Расчет инвертированного тензора инерции
+    matrix_3x3_inverse(Body->Ibody, Body->Ibodyinv);  // Расчет инвертированного тензора инерции
 
 
     // Начальные значения кватерниона
-    Bodies[0].q.s = 1;
+    Body->q.s = 1;
 
-    Bodies[0].q.v[0] = 0;
-    Bodies[0].q.v[1] = 0;
-    Bodies[0].q.v[2] = 0;
+    Body->q.v[0] = 0;
+    Body->q.v[1] = 0;
+    Body->q.v[2] = 0;
 
     // Начальные значения момента силы
-    Bodies[0].L[0] = 0.0008;
-    Bodies[0].L[1] = 0.000;
-    Bodies[0].L[2] = 0.000;
+    Body->L[0] = 0.0;
+    Body->L[1] = 0.001;
+    Body->L[2] = 0.0;
 
+    Body->P[2] = -0.001;
+}
+
+void InitPlane(RigidBody* Body)
+{
+    Body->mass = 0;
+    Body->x[0] = 0;
+    Body->x[1] = 0;
+    Body->x[2] = 0;
+}
+
+void InitStates(RigidBody* Bodies)
+{
+    InitTetrahedron(&Bodies[0]);
+
+    InitPlane(&Bodies[1]);
 }

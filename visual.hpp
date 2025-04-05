@@ -6,7 +6,9 @@
 #include "struct.h"
 
 // Отрисовка тел ПОКА ТЕТРАЭДР
-void DrawBody(const RigidBody& body);
+void DrawTetrahedron(const RigidBody& body);
+
+void DrawPlane(const RigidBody& body); 
 
 // Отрисовка осей
 void DrawAxes();
