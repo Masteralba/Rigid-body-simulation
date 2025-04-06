@@ -150,7 +150,7 @@ void Dxdt(double t, double x[], double xdot[], void* data)
     int NBODIES = simData->NBODIES;
 
     /* put data in x[] into Bodies[] */
-    ArrayToBodies(x, Bodies, NBODIES);
+    //ArrayToBodies(x, Bodies, NBODIES);
     for(int i = 0; i < NBODIES; i++)
     {
         ComputeForceAndTorque(t, &Bodies[i]);
@@ -161,10 +161,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    double a[3] = {0.5, 0.5, 1.6};
-    double b[3] = {0.5, 0, 1};
-    double c[3] = {0, 0, 1};
-    double d[3] = {0.5, 0.2, 0.5};
+    double a[3] = {0.5, 0.5, 2};
+    double b[3] = {0.5, 0, 1.6};
+    double c[3] = {0, 0, 2};
+    double d[3] = {0.5, 0.2, 2};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -174,10 +174,10 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    //double a[3] = {1, 0, -1/sqrt(2)};
-    //double b[3] = {-1, 0, -1/sqrt(2)};
-    //double c[3] = {0, 1, 1/sqrt(2)};
-    //double d[3] = {0, -1, 1/sqrt(2)};
+    //double a[3] = {1, 0, -1/sqrt(2)+2};
+    //double b[3] = {-1, 0, -1/sqrt(2)+2};
+    //double c[3] = {0, 1, 1/sqrt(2)+2};
+    //double d[3] = {0, -1, 1/sqrt(2)+2};
 
     Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
     Body->x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // в системе координат
@@ -191,7 +191,7 @@ void InitTetrahedron(RigidBody* Body)
         Body->d_vertex[i] = d[i] - Body->x[i]; // связанной с телом
     }
 
-    double density = 10;  // Плотность
+    double density = 1;  // Плотность
 
     double R[9];
     compute_R(a, b, c, d, R);
@@ -212,18 +212,27 @@ void InitTetrahedron(RigidBody* Body)
 
     // Начальные значения момента силы
     Body->L[0] = 0.0;
-    Body->L[1] = 0.001;
+    Body->L[1] = 0.0;
     Body->L[2] = 0.0;
 
-    Body->P[2] = -0.001;
+    Body->P[2] = -0.0001;
 }
 
 void InitPlane(RigidBody* Body)
 {
-    Body->mass = 0;
+    Body->mass = __INT_MAX__;
     Body->x[0] = 0;
     Body->x[1] = 0;
     Body->x[2] = 0;
+
+    for (int i=0; i<9; i++)
+        Body->Ibodyinv[i] = 0;
+
+    Body->q.s = 1;
+
+    Body->q.v[0] = 0;
+    Body->q.v[1] = 0;
+    Body->q.v[2] = 0;
 }
 
 void InitStates(RigidBody* Bodies)

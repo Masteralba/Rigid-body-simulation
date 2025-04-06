@@ -18,6 +18,22 @@ void matrix_subtract(double* A, double* B, double* result) {
     }
 }
 
+void vector_add(double* a, double* b, double* res)
+{
+    for (int i=0; i<3; i++) res[i] = a[i] +b[i];
+}
+
+void vector_subtract(double* a, double* b, double* res)
+{
+    for (int i=0; i<3; i++) res[i] = a[i] - b[i];
+}
+
+void scalar_vector_multiply(double lambda, double* a, double* res)
+{
+    for (int i=0; i<3; i++)
+        res[i] = lambda*a[i];
+}
+
 void matrix_3x3_multiply(double* A, double* B, double* result) {
     for (int i = 0; i < 3; i++) {         // Строки матрицы A
         for (int j = 0; j < 3; j++) {     // Столбцы матрицы B
@@ -212,6 +228,13 @@ void orthogonalize_matrix(double matrix[9]) {
 double scalar_multiplication(double* a, double* b)
 {
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+void vector_miltiplication(double* a, double* b, double* res)
+{
+    res[0] = a[1]*b[2] - a[2]*b[1];
+    res[1] = a[2]*b[0] - a[0]*b[2];
+    res[2] = a[0]*b[1] - a[1]*b[0]; 
 }
 
 void quaternion_multiplication(quaternion a, quaternion b, quaternion* res)

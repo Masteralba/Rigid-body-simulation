@@ -5,6 +5,7 @@
 #include "help_functions.h"
 #include "struct.h"
 #include "rigitbody.h"
+#include "collision.h"
 #include "visual.hpp"
 
 #define NBODIES 2 // Количество тел в симуляции
@@ -53,11 +54,17 @@ void update(int value) {
     //for (int j=0; j<STATE_SIZE; j++)
         //printf("%lf ", xFinal[j]);
 
+    for (int i=0; i<3; i++)
+    {
+        printf("%lf %lf %lf || %lf %lf %lf\n\n", Bodies[0].x[0], Bodies[0].x[1], Bodies[0].x[2],
+        Bodies[0].P[0], Bodies[0].P[1], Bodies[0].P[2]);
+    }
 
     double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
     // Расчет кинетической энергии вращения
 
     //printf("%.15e\n", en);
+
 
     // Выполняем один шаг симуляции
     for (int i = 0; i < STATE_SIZE * NBODIES; i++)
@@ -65,11 +72,49 @@ void update(int value) {
 
     double dt = 1.0 / 24.0;   // Шаг симуляции (1/24 секунды)
 
+    // check collision
+    // if yes - compute new x(t)
+
     struct SimulationData data = {Bodies, NBODIES};
 
     ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data);
 
+    char collision = check_collision(Bodies);
+
+    if (collision != '0')
+    {
+        double p[3];
+        Contact c;
+        c.a = &Bodies[0];
+        c.b = &Bodies[1];
+        c.n[0] = 0;
+        c.n[1] = 0;
+        c.n[2] = 1;
+        switch (collision)
+        {
+        case 'a':
+            vector_add(Bodies[0].a_vertex, Bodies[0].x, p);
+            break;
+        case 'b':
+            vector_add(Bodies[0].b_vertex, Bodies[0].x, p);
+            break;
+        case 'c':
+            vector_add(Bodies[0].c_vertex, Bodies[0].x, p);
+            break;
+        case 'd':
+            vector_add(Bodies[0].d_vertex, Bodies[0].x, p);
+            break;
+        }
+
+        for (int i=0; i< 3; i++)
+            c.p[i] = p[i];
+
+        FindAllCollisions(&c, 1);
+        ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data);
+    }
+    
     ArrayToBodies(xFinal, Bodies, NBODIES);
+
 
     rk4Free(&rk4);
 

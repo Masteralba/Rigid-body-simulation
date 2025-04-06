@@ -8,6 +8,12 @@ void matrix_add(double* A, double* B, double* result);
 // Разность матриц
 void matrix_subtract(double* A, double* B, double* result);
 
+void vector_add(double* a, double* b, double* res);
+
+void vector_subtract(double* a, double* b, double* res);
+
+void scalar_vector_multiply(double lambda, double* a, double* res);
+
 // Умножение матриц 3x3
 void matrix_3x3_multiply(double* A, double* B, double* result);
 
@@ -48,6 +54,9 @@ void orthogonalize_matrix(double matrix[9]);
 
 // Скалярное произведение
 double scalar_multiplication(double* a, double* b);
+
+// Векторное произведение
+void vector_miltiplication(double* a, double* b, double* res);
 
 // Умножение кватернионов
 void quaternion_multiplication(quaternion a, quaternion b, quaternion* res);

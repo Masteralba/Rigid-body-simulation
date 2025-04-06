@@ -54,3 +54,12 @@ struct SimulationData {
     RigidBody* Bodies;
     int NBODIES;
 };
+
+
+typedef struct  {
+    RigidBody *a, /* body containing vertex */
+    *b; /* body containing face */
+    double p[3], /* world-space vertex location */
+    n[3]; /* outwards pointing normal of face */
+    int vf; /* true if vertex/face contact */
+} Contact;
