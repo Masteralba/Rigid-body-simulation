@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
-#include "help_functions.h"
+#include "helper_functions.h"
 #include "struct.h"
 #include "rigitbody.h"
 #include "collision.h"
@@ -47,74 +47,25 @@ void update(int value) {
     double x0[STATE_SIZE * NBODIES], // Массив векторов состояний до шага моделирования
     xFinal[STATE_SIZE * NBODIES];   // Массив векторов состояний после шага моделирования
 
-    BodiesToArray(xFinal, Bodies, NBODIES);
+    checking(Bodies);
+
+    BodiesToArray(x0, Bodies, NBODIES);
 
     Rk4 rk4 = {NULL, NULL, NULL, NULL, NULL};
 
-    //for (int j=0; j<STATE_SIZE; j++)
-        //printf("%lf ", xFinal[j]);
-
-    for (int i=0; i<3; i++)
-    {
-        printf("%lf %lf %lf || %lf %lf %lf\n\n", Bodies[0].x[0], Bodies[0].x[1], Bodies[0].x[2],
-        Bodies[0].P[0], Bodies[0].P[1], Bodies[0].P[2]);
-    }
-
     double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
+
+    double ek = scalar_multiplication(Bodies[0].P, Bodies[0].P) / (2*Bodies[0].mass);
     // Расчет кинетической энергии вращения
 
-    //printf("%.15e\n", en);
-
-
-    // Выполняем один шаг симуляции
-    for (int i = 0; i < STATE_SIZE * NBODIES; i++)
-        x0[i] = xFinal[i];
+    printf("%.15e\n", en+ek);
 
     double dt = 1.0 / 24.0;   // Шаг симуляции (1/24 секунды)
-
-    // check collision
-    // if yes - compute new x(t)
 
     struct SimulationData data = {Bodies, NBODIES};
 
     ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data);
-
-    char collision = check_collision(Bodies);
-
-    if (collision != '0')
-    {
-        double p[3];
-        Contact c;
-        c.a = &Bodies[0];
-        c.b = &Bodies[1];
-        c.n[0] = 0;
-        c.n[1] = 0;
-        c.n[2] = 1;
-        switch (collision)
-        {
-        case 'a':
-            vector_add(Bodies[0].a_vertex, Bodies[0].x, p);
-            break;
-        case 'b':
-            vector_add(Bodies[0].b_vertex, Bodies[0].x, p);
-            break;
-        case 'c':
-            vector_add(Bodies[0].c_vertex, Bodies[0].x, p);
-            break;
-        case 'd':
-            vector_add(Bodies[0].d_vertex, Bodies[0].x, p);
-            break;
-        }
-
-        for (int i=0; i< 3; i++)
-            c.p[i] = p[i];
-
-        FindAllCollisions(&c, 1);
-        ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data);
-    }
-    
     ArrayToBodies(xFinal, Bodies, NBODIES);
-
 
     rk4Free(&rk4);
 

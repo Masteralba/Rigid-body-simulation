@@ -1,7 +1,7 @@
 #include <GL/glut.h>
 
 #include "struct.h"
-#include "help_functions.h"
+#include "helper_functions.h"
 #include "visual.hpp"
 
 

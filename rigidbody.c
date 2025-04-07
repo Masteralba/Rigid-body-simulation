@@ -3,7 +3,7 @@
 #include <math.h>
 
 #include "struct.h"
-#include "help_functions.h"
+#include "helper_functions.h"
 #include "rigitbody.h"
 
 /* Copy the state information into an array */
@@ -87,13 +87,13 @@ void BodiesToArray(double x[], RigidBody* Bodies, int NBODIES)
 
 void ComputeForceAndTorque(double t, RigidBody *rb) // записываем какие силы действуют в момент времени t, пока силы - константы
 {
-    rb->force[0] = 0.0;
-    rb->force[1] = 0.0;
-    rb->force[2] = 0.0;
+    //rb->force[0] = 0.0;
+    //rb->force[1] = 0.;
+    //rb->force[2] = -0.000001;
 
-    rb->torque[0] = 0.0;
-    rb->torque[1] = 0.0;
-    rb->torque[2] = 0.0;
+    //rb->torque[0] = 0.0;
+    //rb->torque[1] = 0.0;
+    //rb->torque[2] = 0.0;
 }
 
 void DdtStateToArray(RigidBody *rb, double *xdot)
@@ -161,10 +161,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    double a[3] = {0.5, 0.5, 2};
-    double b[3] = {0.5, 0, 1.6};
-    double c[3] = {0, 0, 2};
-    double d[3] = {0.5, 0.2, 2};
+    //double a[3] = {1, .5, 1.1};
+    //double b[3] = {0.5, 0.5, 2.3};
+    //double c[3] = {1.2, 1, 1};
+    //double d[3] = {1.1, 0.6, 1.2};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -174,10 +174,23 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    //double a[3] = {1, 0, -1/sqrt(2)+2};
-    //double b[3] = {-1, 0, -1/sqrt(2)+2};
-    //double c[3] = {0, 1, 1/sqrt(2)+2};
-    //double d[3] = {0, -1, 1/sqrt(2)+2};
+    double a[3] = {1, 0, -1/sqrt(2)};
+    double b[3] = {-1, 0, -1/sqrt(2)};
+    double c[3] = {0, 1, 1/sqrt(2)};
+    double d[3] = {0, -1, 1/sqrt(2)};
+
+    a[2] += 5;
+    b[2] += 5;
+    c[2] += 5;
+    d[2] += 5;
+
+    for (int i=0; i<3; i++)
+    {
+        a[i] /= 7;
+        b[i] /= 7;
+        c[i] /= 7;
+        d[i] /= 7;
+    }
 
     Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
     Body->x[1] = (a[1] + b[1] + c[1] + d[1]) / 4;  // в системе координат
@@ -194,8 +207,9 @@ void InitTetrahedron(RigidBody* Body)
     double density = 1;  // Плотность
 
     double R[9];
-    compute_R(a, b, c, d, R);
-    Body->mass = compute_mass_tetrahedron(density, R); // Считаем плотность равную 1
+    compute_R(Body->a_vertex, Body->b_vertex,
+    Body->c_vertex, Body->d_vertex, R);
+    Body->mass = compute_mass_tetrahedron(density, R);
 
     calculateTetrahedronInertia(Body->a_vertex, Body->b_vertex,
     Body->c_vertex, Body->d_vertex, density, Body->Ibody);  // Расчет тензора инерции
@@ -213,9 +227,11 @@ void InitTetrahedron(RigidBody* Body)
     // Начальные значения момента силы
     Body->L[0] = 0.0;
     Body->L[1] = 0.0;
-    Body->L[2] = 0.0;
+    //Body->L[2] = 0.00001;
 
-    Body->P[2] = -0.0001;
+    //Body->P[2] = -0.001;
+
+    Body->force[2] = -Body->mass*10/50000;
 }
 
 void InitPlane(RigidBody* Body)

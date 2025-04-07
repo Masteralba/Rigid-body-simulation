@@ -7,7 +7,7 @@ CFLAGS = -g
 LDFLAGS = -lGL -lGLU -lglut
 
 # Исходные файлы
-SRCS = main.cpp visual.cpp rigidbody.c help_functions.c collision.c
+SRCS = main.cpp visual.cpp rigidbody.c helper_functions.c collision.c
 
 # Объектные файлы
 OBJS = $(SRCS:.cpp=.o)

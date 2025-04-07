@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "struct.h"
-#include "help_functions.h"
+#include "helper_functions.h"
 
 
 int Ncontacts;
@@ -20,6 +20,35 @@ char check_collision(RigidBody* Bodies)
         return 'd';
     
     return '0'; // no collision
+}
+
+int check_vertex_collision(RigidBody* Body, char vertex)
+{
+    switch (vertex)
+    {
+    case 'a':
+        if (Body[0].a_vertex[2] + Body[0].x[2] < 0)
+            return 1;
+        break;
+    case 'b':
+        if (Body[0].b_vertex[2] + Body[0].x[2] < 0)
+            return 1;
+        break;
+    case 'c':
+        if (Body[0].c_vertex[2] + Body[0].x[2] < 0)
+            return 1;
+        break;
+    case 'd':
+        if (Body[0].d_vertex[2] + Body[0].x[2] < 0)
+            return 1;
+        break;
+    default:
+        return 0;
+        break;
+    }
+
+    return 0;
+    
 }
 
 /* Return the velocity of a point on a rigid body */
@@ -40,7 +69,7 @@ void pt_velocity(RigidBody *body, double* p, double res[3])
 int colliding(Contact *c)
 {
 
-    double t = 0.000000000001;
+    double t = 0.00001;
 
     double padot[3], pbdot[3];
     pt_velocity(c->a, c->p, padot); /* p˙− a (t0 ) */
@@ -155,4 +184,65 @@ void FindAllCollisions(Contact contacts[], int ncontacts)
                 //ode_discontinuous();
             }
     } while(had_collision == 1);
+}
+
+
+void checking(RigidBody* Bodies)
+{
+    if (check_vertex_collision(&Bodies[0], 'a'))
+    {
+        double p[3];
+        Contact c;
+        c.a = &Bodies[0];
+        c.b = &Bodies[1];
+        c.n[0] = 0;
+        c.n[1] = 0;
+        c.n[2] = 1;
+        vector_add(Bodies[0].a_vertex, Bodies[0].x, p);
+        for (int i=0; i< 3; i++)
+            c.p[i] = p[i];
+        FindAllCollisions(&c, 1);
+    }
+    if (check_vertex_collision(&Bodies[0], 'b'))
+    {
+        double p[3];
+        Contact c;
+        c.a = &Bodies[0];
+        c.b = &Bodies[1];
+        c.n[0] = 0;
+        c.n[1] = 0;
+        c.n[2] = 1;
+        vector_add(Bodies[0].b_vertex, Bodies[0].x, p);
+        for (int i=0; i< 3; i++)
+            c.p[i] = p[i];
+        FindAllCollisions(&c, 1);
+    }
+    if (check_vertex_collision(&Bodies[0], 'c'))
+    {
+        double p[3];
+        Contact c;
+        c.a = &Bodies[0];
+        c.b = &Bodies[1];
+        c.n[0] = 0;
+        c.n[1] = 0;
+        c.n[2] = 1;
+        vector_add(Bodies[0].c_vertex, Bodies[0].x, p);
+        for (int i=0; i< 3; i++)
+            c.p[i] = p[i];
+        FindAllCollisions(&c, 1);
+    }
+    if (check_vertex_collision(&Bodies[0], 'd'))
+    {
+        double p[3];
+        Contact c;
+        c.a = &Bodies[0];
+        c.b = &Bodies[1];
+        c.n[0] = 0;
+        c.n[1] = 0;
+        c.n[2] = 1;
+        vector_add(Bodies[0].d_vertex, Bodies[0].x, p);
+        for (int i=0; i< 3; i++)
+            c.p[i] = p[i];
+        FindAllCollisions(&c, 1);
+    }
 }

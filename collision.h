@@ -11,3 +11,7 @@ int colliding(Contact *c);
 void collision(Contact *c, double epsilon);
 
 void FindAllCollisions(Contact contacts[], int ncontacts);
+
+int check_vertex_collision(RigidBody* Body, char vertex);
+
+void checking(RigidBody* Bodies);

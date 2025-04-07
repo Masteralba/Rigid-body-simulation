@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include "struct.h"
-#include "help_functions.h"
 
 void matrix_add(double* A, double* B, double* result) {
     for (int i = 0; i < 9; i++) {
