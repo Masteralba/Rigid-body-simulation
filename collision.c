@@ -10,13 +10,13 @@ Contact *Contacts;
 
 char check_collision(RigidBody* Bodies)
 {
-    if (Bodies[0].a_vertex[2] + Bodies[0].x[2] < 0)
+    if (Bodies[0].a_vertex[2] + Bodies[0].x[2] <= 0)
         return 'a';
-    if (Bodies[0].b_vertex[2] + Bodies[0].x[2] < 0)
+    if (Bodies[0].b_vertex[2] + Bodies[0].x[2] <= 0)
         return 'b';
-    if (Bodies[0].c_vertex[2] + Bodies[0].x[2] < 0)
+    if (Bodies[0].c_vertex[2] + Bodies[0].x[2] <= 0)
         return 'c';
-    if (Bodies[0].d_vertex[2] + Bodies[0].x[2] < 0)
+    if (Bodies[0].d_vertex[2] + Bodies[0].x[2] <= 0)
         return 'd';
     
     return '0'; // no collision
@@ -27,19 +27,19 @@ int check_vertex_collision(RigidBody* Body, char vertex)
     switch (vertex)
     {
     case 'a':
-        if (Body[0].a_vertex[2] + Body[0].x[2] < 0)
+        if (Body[0].a_vertex[2] + Body[0].x[2] <= 0)
             return 1;
         break;
     case 'b':
-        if (Body[0].b_vertex[2] + Body[0].x[2] < 0)
+        if (Body[0].b_vertex[2] + Body[0].x[2] <= 0)
             return 1;
         break;
     case 'c':
-        if (Body[0].c_vertex[2] + Body[0].x[2] < 0)
+        if (Body[0].c_vertex[2] + Body[0].x[2] <= 0)
             return 1;
         break;
     case 'd':
-        if (Body[0].d_vertex[2] + Body[0].x[2] < 0)
+        if (Body[0].d_vertex[2] + Body[0].x[2] <= 0)
             return 1;
         break;
     default:

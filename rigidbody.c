@@ -150,9 +150,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
     int NBODIES = simData->NBODIES;
 
     /* put data in x[] into Bodies[] */
-    //ArrayToBodies(x, Bodies, NBODIES);
+    ArrayToBodies(x, Bodies, NBODIES);
     for(int i = 0; i < NBODIES; i++)
     {
+
         ComputeForceAndTorque(t, &Bodies[i]);
         DdtStateToArray(&Bodies[i], &xdot[i * STATE_SIZE]);
     }
@@ -161,10 +162,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    //double a[3] = {1, .5, 1.1};
-    //double b[3] = {0.5, 0.5, 2.3};
-    //double c[3] = {1.2, 1, 1};
-    //double d[3] = {1.1, 0.6, 1.2};
+    double a[3] = {1, 0, 1.1};
+    double b[3] = {0, 1, 1.1};
+    double c[3] = {1, 1, 1.1};
+    double d[3] = {0.6, 0.6, 1.9};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -174,22 +175,22 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    double a[3] = {1, 0, -1/sqrt(2)};
-    double b[3] = {-1, 0, -1/sqrt(2)};
-    double c[3] = {0, 1, 1/sqrt(2)};
-    double d[3] = {0, -1, 1/sqrt(2)};
+    //double a[3] = {1, 0, -1/sqrt(2)};
+    //double b[3] = {-1, 0, -1/sqrt(2)};
+    //double c[3] = {0, 1, 1/sqrt(2)};
+    //double d[3] = {0, -1, 1/sqrt(2)};
 
-    a[2] += 5;
-    b[2] += 5;
-    c[2] += 5;
-    d[2] += 5;
+    a[2] += 0;
+    b[2] += 0;
+    c[2] += 0;
+    d[2] += 0;
 
     for (int i=0; i<3; i++)
     {
-        a[i] /= 7;
-        b[i] /= 7;
-        c[i] /= 7;
-        d[i] /= 7;
+        a[i] /= 2;
+        b[i] /= 2;
+        c[i] /= 2;
+        d[i] /= 2;
     }
 
     Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
@@ -213,7 +214,7 @@ void InitTetrahedron(RigidBody* Body)
 
     calculateTetrahedronInertia(Body->a_vertex, Body->b_vertex,
     Body->c_vertex, Body->d_vertex, density, Body->Ibody);  // Расчет тензора инерции
-
+    
     matrix_3x3_inverse(Body->Ibody, Body->Ibodyinv);  // Расчет инвертированного тензора инерции
 
 
@@ -226,12 +227,13 @@ void InitTetrahedron(RigidBody* Body)
 
     // Начальные значения момента силы
     Body->L[0] = 0.0;
-    Body->L[1] = 0.0;
+    //Body->L[1] = 0.000001;
     //Body->L[2] = 0.00001;
+
 
     //Body->P[2] = -0.001;
 
-    Body->force[2] = -Body->mass*10/50000;
+    Body->force[2] = -Body->mass*10/50;
 }
 
 void InitPlane(RigidBody* Body)

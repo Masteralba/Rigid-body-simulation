@@ -167,7 +167,7 @@ void ode(Rk4* self, double* x, double* xFinal, int n, double t0, double t1, void
     f(t0, self->tmp, self->k4, data);  // now fx has the right part f(k3)
 
     for (int i=0; i<n; i++)
-        xFinal[i] = x[i] + 1./6.*(self->k1[i]+2*self->k2[i]+2*self->k3[i]+self->k4[i]);
+        xFinal[i] = x[i] + 1./6.*h*(self->k1[i]+2*self->k2[i]+2*self->k3[i]+self->k4[i]);
 
 }
 
