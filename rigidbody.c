@@ -161,10 +161,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    //double a[3] = {1, 0, 1.1};
-    //double b[3] = {0, 1, 1.1};
-    //double c[3] = {1, 1, 1.1};
-    //double d[3] = {0.6, 0.6, 1.9};
+    double a[3] = {1, 0, 1.1};
+    double b[3] = {0, 1, 1.1};
+    double c[3] = {1, 1, 1.1};
+    double d[3] = {0.6, 0.6, 1.9};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -174,22 +174,22 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    double a[3] = {1, 0, -1/sqrt(2)};
-    double b[3] = {-1, 0, -1/sqrt(2)};
-    double c[3] = {0, 1, 1/sqrt(2)};
-    double d[3] = {0, -1, 1/sqrt(2)};
+    //double a[3] = {1, 0, -1/sqrt(2)};
+    //double b[3] = {-1, 0, -1/sqrt(2)};
+    //double c[3] = {0, 1, 1/sqrt(2)};
+    //double d[3] = {0, -1, 1/sqrt(2)};
 
-    a[2] += 6;
-    b[2] += 6;
-    c[2] += 6;
-    d[2] += 6;
+    a[2] += 1;
+    b[2] += 1;
+    c[2] += 1;
+    d[2] += 1;
 
     for (int i=0; i<3; i++)
     {
-        a[i] /= 6;
-        b[i] /= 6;
-        c[i] /= 6;
-        d[i] /= 6;
+        a[i] /= 2;
+        b[i] /= 2;
+        c[i] /= 2;
+        d[i] /= 2;
     }
 
     Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс

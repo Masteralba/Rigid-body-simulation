@@ -23,18 +23,17 @@ void RenderScene() // Находится здесь, потому что тре�
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    gluLookAt(0.0, 5.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
     GLfloat light_position[] = {5.0, 5.0, 5.0, 1.0};
     GLfloat light_color[] = {1.0, 1.0, 1.0, 1.0};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_color);
 
-    glDisable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     DrawTetrahedron(Bodies[0]);  // Использование глобальной переменной
     DrawPlane(Bodies[1]);
     glEnable(GL_LIGHTING);
-    DrawAxes();
 
     glutSwapBuffers();
 }

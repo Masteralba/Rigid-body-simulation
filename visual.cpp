@@ -5,48 +5,6 @@
 #include "visual.hpp"
 
 
-void DrawAngularVelocity(const RigidBody& body) {
-    glDisable(GL_LIGHTING);
-    glLineWidth(2.0f);
-    
-    // Начальная точка - центр масс тела
-    GLfloat start[3] = {
-        static_cast<GLfloat>(body.x[0]),
-        static_cast<GLfloat>(body.x[1]),
-        static_cast<GLfloat>(body.x[2])
-    };
-    
-    // Конечная точка - центр масс + omega (масштабируем для наглядности)
-    const float scale = 7.0f; // Масштабный коэффициент для визуализации
-    GLfloat end[3] = {
-        start[0] + static_cast<GLfloat>(body.omega[0]) * scale,
-        start[1] + static_cast<GLfloat>(body.omega[1]) * scale,
-        start[2] + static_cast<GLfloat>(body.omega[2]) * scale
-    };
-    
-    // Рисуем вектор
-    glBegin(GL_LINES);
-    glColor3f(1.0f, 0.8f, 0.0f); // Жёлто-оранжевый цвет
-    glVertex3fv(start);
-    glVertex3fv(end);
-    
-    // Рисуем стрелочку (конус)
-    float arrow_size = 1.f;
-    glVertex3fv(end);
-    glVertex3f(end[0] - body.omega[0]*arrow_size + body.omega[1]*arrow_size*0.3f,
-              end[1] - body.omega[1]*arrow_size - body.omega[0]*arrow_size*0.3f,
-              end[2] - body.omega[2]*arrow_size);
-    
-    glVertex3fv(end);
-    glVertex3f(end[0] - body.omega[0]*arrow_size - body.omega[1]*arrow_size*0.3f,
-              end[1] - body.omega[1]*arrow_size + body.omega[0]*arrow_size*0.3f,
-              end[2] - body.omega[2]*arrow_size);
-    glEnd();
-    
-    glLineWidth(1.0f);
-    glEnable(GL_LIGHTING);
-}
-
 void DrawTetrahedron(const RigidBody& body) 
 {
     glPushMatrix();
@@ -61,10 +19,16 @@ void DrawTetrahedron(const RigidBody& body)
 
     glMultMatrixf(rotation);
 
-    GLfloat color[] = {0.6f, 0.2f, 0.1f, 1.0f};
-    GLfloat ambcolor[] = {0.6f, 0.2f, 0.1f, 1.0f};
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ambcolor);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+    // Желто-оранжевый материал
+    GLfloat orange_diffuse[] = {1.0f, 0.6f, 0.2f, 1.0f};
+    GLfloat orange_ambient[] = {0.3f, 0.2f, 0.1f, 1.0f};
+    GLfloat orange_specular[] = {1.0f, 1.0f, 0.8f, 1.0f};
+    GLfloat shininess = 50.0f;
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, orange_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, orange_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, orange_specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 
     GLfloat a[3], b[3], c[3], d[3];
     
@@ -76,37 +40,34 @@ void DrawTetrahedron(const RigidBody& body)
     }
 
     glBegin(GL_TRIANGLES);
-
-    // Грани тетраэдра
-    // Грань 1: a, b, c (красный цвет)
-    glColor3f(1.0f, 0.0f, 0.0f); // Красный
+    // Все грани одного цвета
+    // Грань 1: a, b, c
+    glNormal3f(0, 0, 1); // Простая нормаль (можно улучшить)
     glVertex3fv(a);
     glVertex3fv(b);
     glVertex3fv(c);
 
-    // Грань 2: a, b, d (зелёный цвет)
-    glColor3f(0.0f, 1.0f, 0.0f); // Зелёный
+    // Грань 2: a, b, d
+    glNormal3f(0, 1, 0);
     glVertex3fv(a);
     glVertex3fv(b);
     glVertex3fv(d);
 
-    // Грань 3: a, c, d (синий цвет)
-    glColor3f(0.0f, 0.0f, 1.0f); // Синий
+    // Грань 3: a, c, d
+    glNormal3f(1, 0, 0);
     glVertex3fv(a);
     glVertex3fv(c);
     glVertex3fv(d);
 
-    // Грань 4: b, c, d (жёлтый цвет)
-    glColor3f(1.0f, 1.0f, 0.0f); // Жёлтый
+    // Грань 4: b, c, d
+    glNormal3f(0, 0, -1);
     glVertex3fv(b);
     glVertex3fv(c);
     glVertex3fv(d);
-
     glEnd();
 
     glPopMatrix();
 
-    //DrawAngularVelocity(body);
 }
 
 
@@ -115,9 +76,9 @@ void DrawPlane(const RigidBody& body)
     glPushMatrix();
     
     // Размер плоскости
-    const float size = 10.0f;
+    const float size = 2.5f;
     // Количество клеток
-    const int divisions = 10;
+    const int divisions = 8;
     // Размер одной клетки
     const float step = size / divisions;
     
@@ -149,31 +110,24 @@ void DrawPlane(const RigidBody& body)
     glPopMatrix();
 }
 
-void DrawAxes() 
-{
-    glDisable(GL_LIGHTING);
-    glLineWidth(3.0f);
-    glBegin(GL_LINES);
-    glColor3f(1, 0.2f, 0.2f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(5.0f, 0.0f, 0.0f);
-
-    glColor3f(0.2f, 1, 0.2f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 5.0f, 0.0f);
-
-    glColor3f(0.2f, 0.2f, 1);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 5.0f);
-    glEnd();
-    glLineWidth(1.0f);
-    glEnable(GL_LIGHTING);
-}
-
 void initGL() 
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
+    
+    // Настройка света
+    GLfloat light_position[] = {.0f, 0.0f, .0f, 0.0f};
+    GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat light_ambient[] = {1.f, 1.f, 1.6f, 2.0f};
+    GLfloat light_specular[] = {3.0f, 3.0f, 3.0f, 3.0f};
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glEnable(GL_LIGHT0);
+    
+    // Включение расчета освещения для обеих сторон полигонов
+    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 }
