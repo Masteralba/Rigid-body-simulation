@@ -53,14 +53,16 @@ void update(int value) {
 
     Rk4 rk4 = {NULL, NULL, NULL, NULL, NULL};
 
+
+
     double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
 
-    double ek = scalar_multiplication(Bodies[0].P, Bodies[0].P) / (2*Bodies[0].mass);
+    double ek = scalar_multiplication(Bodies[0].v, Bodies[0].v)*Bodies[0].mass*0.5;
 
-    double u = Bodies[0].mass*Bodies[0].x[2]*10/50;
-    // Расчет кинетической энергии вращения
+    double u = Bodies[0].mass*Bodies[0].x[2]*1/5;
 
     printf("%.15e\n", en+ek+u);
+
 
     double dt = 1.0 / 24.0;   // Шаг симуляции (1/24 секунды)
 

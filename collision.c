@@ -10,13 +10,20 @@ Contact *Contacts;
 
 char check_collision(RigidBody* Bodies)
 {
-    if (Bodies[0].a_vertex[2] + Bodies[0].x[2] <= 0)
+    double temp_a[3], temp_b[3], temp_c[3], temp_d[3];
+
+    matrix_triple_multiply(Bodies[0].R, Bodies[0].a_vertex, temp_a);
+    matrix_triple_multiply(Bodies[0].R, Bodies[0].b_vertex, temp_b);
+    matrix_triple_multiply(Bodies[0].R, Bodies[0].c_vertex, temp_c);
+    matrix_triple_multiply(Bodies[0].R, Bodies[0].d_vertex, temp_d);
+
+    if (temp_a[2] <= 0)
         return 'a';
-    if (Bodies[0].b_vertex[2] + Bodies[0].x[2] <= 0)
+    if (temp_b[2] <= 0)
         return 'b';
-    if (Bodies[0].c_vertex[2] + Bodies[0].x[2] <= 0)
+    if (temp_c[2] <= 0)
         return 'c';
-    if (Bodies[0].d_vertex[2] + Bodies[0].x[2] <= 0)
+    if (temp_d[2]<= 0)
         return 'd';
     
     return '0'; // no collision
@@ -24,22 +31,28 @@ char check_collision(RigidBody* Bodies)
 
 int check_vertex_collision(RigidBody* Body, char vertex)
 {
+    double temp_a[3], temp_b[3], temp_c[3], temp_d[3];
+
+    matrix_triple_multiply(Body->R, Body->a_vertex, temp_a);
+    matrix_triple_multiply(Body->R, Body->b_vertex, temp_b);
+    matrix_triple_multiply(Body->R, Body->c_vertex, temp_c);
+    matrix_triple_multiply(Body->R, Body->d_vertex, temp_d);
     switch (vertex)
     {
     case 'a':
-        if (Body[0].a_vertex[2] + Body[0].x[2] <= 0)
+        if (temp_a[2] + Body->x[2] <= 0)
             return 1;
         break;
     case 'b':
-        if (Body[0].b_vertex[2] + Body[0].x[2] <= 0)
+        if (temp_b[2] + Body->x[2] <= 0)
             return 1;
         break;
     case 'c':
-        if (Body[0].c_vertex[2] + Body[0].x[2] <= 0)
+        if (temp_c[2] + Body->x[2]<= 0)
             return 1;
         break;
     case 'd':
-        if (Body[0].d_vertex[2] + Body[0].x[2] <= 0)
+        if (temp_d[2] + Body->x[2] <= 0)
             return 1;
         break;
     default:

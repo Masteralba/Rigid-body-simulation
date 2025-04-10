@@ -153,7 +153,6 @@ void Dxdt(double t, double x[], double xdot[], void* data)
     ArrayToBodies(x, Bodies, NBODIES);
     for(int i = 0; i < NBODIES; i++)
     {
-
         ComputeForceAndTorque(t, &Bodies[i]);
         DdtStateToArray(&Bodies[i], &xdot[i * STATE_SIZE]);
     }
@@ -162,10 +161,10 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    double a[3] = {1, 0, 1.1};
-    double b[3] = {0, 1, 1.1};
-    double c[3] = {1, 1, 1.1};
-    double d[3] = {0.6, 0.6, 1.9};
+    //double a[3] = {1, 0, 1.1};
+    //double b[3] = {0, 1, 1.1};
+    //double c[3] = {1, 1, 1.1};
+    //double d[3] = {0.6, 0.6, 1.9};
 
     // С этими данными можно сравнить пример расчета тензора инерции из статьи
     //double a[3] = {8.3322, -11.86875, 0.93355};
@@ -175,22 +174,22 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    //double a[3] = {1, 0, -1/sqrt(2)};
-    //double b[3] = {-1, 0, -1/sqrt(2)};
-    //double c[3] = {0, 1, 1/sqrt(2)};
-    //double d[3] = {0, -1, 1/sqrt(2)};
+    double a[3] = {1, 0, -1/sqrt(2)};
+    double b[3] = {-1, 0, -1/sqrt(2)};
+    double c[3] = {0, 1, 1/sqrt(2)};
+    double d[3] = {0, -1, 1/sqrt(2)};
 
-    a[2] += 0;
-    b[2] += 0;
-    c[2] += 0;
-    d[2] += 0;
+    a[2] += 6;
+    b[2] += 6;
+    c[2] += 6;
+    d[2] += 6;
 
     for (int i=0; i<3; i++)
     {
-        a[i] /= 2;
-        b[i] /= 2;
-        c[i] /= 2;
-        d[i] /= 2;
+        a[i] /= 6;
+        b[i] /= 6;
+        c[i] /= 6;
+        d[i] /= 6;
     }
 
     Body->x[0] = (a[0] + b[0] + c[0] + d[0]) / 4;  // Расчет координат центра масс
@@ -226,14 +225,14 @@ void InitTetrahedron(RigidBody* Body)
     Body->q.v[2] = 0;
 
     // Начальные значения момента силы
-    Body->L[0] = 0.0;
+    //Body->L[0] = 0.00001;
     //Body->L[1] = 0.000001;
-    //Body->L[2] = 0.00001;
+    //Body->L[2] = 0.0001;
 
 
     //Body->P[2] = -0.001;
 
-    Body->force[2] = -Body->mass*10/50;
+    Body->force[2] = -Body->mass*1/5;
 }
 
 void InitPlane(RigidBody* Body)
