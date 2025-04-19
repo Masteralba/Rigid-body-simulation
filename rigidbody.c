@@ -49,7 +49,6 @@ void ArrayToState(RigidBody *rb, double *y)
 
     /* Compute auxiliary variables... */
 
-
     quaternion_normalize(&rb->q);  // Нормализуем кватернион
 
     quaternionToMatrix(rb->q, rb->R);  // Считаем матрицу поворота
@@ -85,16 +84,8 @@ void BodiesToArray(double x[], RigidBody* Bodies, int NBODIES)
 }
 
 
-void ComputeForceAndTorque(double t, RigidBody *rb) // записываем какие силы действуют в момент времени t, пока силы - константы
-{
-    //rb->force[0] = 0.0;
-    //rb->force[1] = 0.;
-    //rb->force[2] = -0.000001;
-
-    //rb->torque[0] = 0.0;
-    //rb->torque[1] = 0.0;
-    //rb->torque[2] = 0.0;
-}
+void ComputeForceAndTorque(double t, RigidBody *rb) // записываем какие силы действуют в момент времени t НИЧЕГО НЕ ДЕЛАЕТ
+{}
 
 void DdtStateToArray(RigidBody *rb, double *xdot)
 {
@@ -119,7 +110,9 @@ void DdtStateToArray(RigidBody *rb, double *xdot)
     omega_quat.v[1] = rb->omega[1];
     omega_quat.v[2] = rb->omega[2];
 
-    quaternion_multiplication(rb->q, omega_quat, &qdot);   // dq/dt = 0.5*omega*q
+    quaternion_multiplication(omega_quat, rb->q, &qdot);
+
+    //quaternion_multiplication(rb->q, omega_quat, &qdot);   // dq/dt = 0.5*omega*q
 
     qdot.s *= 0.5;
     qdot.v[0] *= 0.5;
@@ -145,7 +138,7 @@ void Dxdt(double t, double x[], double xdot[], void* data)
     // Приводим data к типу SimulationData*
     struct SimulationData* simData = (struct SimulationData*)data;
 
-    // Извлекаем Bodies и NBODIES
+    // Извлекаем Bodies и NBODIES   
     RigidBody* Bodies = simData->Bodies;
     int NBODIES = simData->NBODIES;
 
@@ -161,12 +154,12 @@ void Dxdt(double t, double x[], double xdot[], void* data)
 void InitTetrahedron(RigidBody* Body)
 {
     // Вершины неправильного тетраэдра
-    double a[3] = {1, 0, 1.1};
-    double b[3] = {0, 1, 1.1};
+    double a[3] = {1, 0, 0.5};
+    double b[3] = {0, 0.5, 1.1};
     double c[3] = {1, 1, 1.1};
-    double d[3] = {0.6, 0.6, 1.9};
+    double d[3] = {1.6, 0.6, 1.9};
 
-    // С этими данными можно сравнить пример расчета тензора инерции из статьи
+    // С этими данными можно сравнить пример расчета тензора инерции из статьи.
     //double a[3] = {8.3322, -11.86875, 0.93355};
     //double b[3] = {0.75523, 5., 16.37072};
     //double c[3] = {52.61236, 5., -5.38580};
@@ -174,10 +167,10 @@ void InitTetrahedron(RigidBody* Body)
 
     //platonic tetrahedron
 
-    //double a[3] = {1, 0, -1/sqrt(2)};
+    //double a[3] = {1, 0, -1/sqrt(2)+0.3};
     //double b[3] = {-1, 0, -1/sqrt(2)};
-    //double c[3] = {0, 1, 1/sqrt(2)};
-    //double d[3] = {0, -1, 1/sqrt(2)};
+    //double c[3] = {0, 1, 1/sqrt(2)+0.5};
+    //double d[3] = {0-0.4, -1, 1/sqrt(2)};
 
     a[2] += 1;
     b[2] += 1;
@@ -224,15 +217,8 @@ void InitTetrahedron(RigidBody* Body)
     Body->q.v[1] = 0;
     Body->q.v[2] = 0;
 
-    // Начальные значения момента силы
-    //Body->L[0] = 0.00001;
-    //Body->L[1] = 0.000001;
-    //Body->L[2] = 0.0001;
-
-
-    //Body->P[2] = -0.001;
-
-    Body->force[2] = -Body->mass*1/5;
+    // Задаем изначальную силу
+    Body->force[2] = -Body->mass*0.1;
 }
 
 void InitPlane(RigidBody* Body)

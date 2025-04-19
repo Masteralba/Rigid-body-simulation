@@ -49,9 +49,6 @@ void (*f)(double, double*, double*, void*), void* data);
 // Освобождение памяти из под структуры rk4
 void rk4Free(Rk4* rk);
 
-// Ортогонализация матрицы
-void orthogonalize_matrix(double matrix[9]);
-
 // Скалярное произведение
 double scalar_multiplication(double* a, double* b);
 
@@ -66,3 +63,5 @@ void quaternion_normalize(quaternion* q);
 
 // Перевод кватерниона в матрицу
 void quaternionToMatrix(quaternion q, double* res);
+
+double compute_body_energy(RigidBody* Body, double g);

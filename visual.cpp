@@ -128,6 +128,4 @@ void initGL()
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glEnable(GL_LIGHT0);
     
-    // Включение расчета освещения для обеих сторон полигонов
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 }

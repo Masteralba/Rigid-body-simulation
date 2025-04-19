@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 #include "struct.h"
 #include "helper_functions.h"
 
@@ -8,39 +9,19 @@
 int Ncontacts;
 Contact *Contacts;
 
-char check_collision(RigidBody* Bodies)
-{
-    double temp_a[3], temp_b[3], temp_c[3], temp_d[3];
-
-    matrix_triple_multiply(Bodies[0].R, Bodies[0].a_vertex, temp_a);
-    matrix_triple_multiply(Bodies[0].R, Bodies[0].b_vertex, temp_b);
-    matrix_triple_multiply(Bodies[0].R, Bodies[0].c_vertex, temp_c);
-    matrix_triple_multiply(Bodies[0].R, Bodies[0].d_vertex, temp_d);
-
-    if (temp_a[2] <= 0)
-        return 'a';
-    if (temp_b[2] <= 0)
-        return 'b';
-    if (temp_c[2] <= 0)
-        return 'c';
-    if (temp_d[2]<= 0)
-        return 'd';
-    
-    return '0'; // no collision
-}
-
 int check_vertex_collision(RigidBody* Body, char vertex)
 {
     double temp_a[3], temp_b[3], temp_c[3], temp_d[3];
 
-    matrix_triple_multiply(Body->R, Body->a_vertex, temp_a);
-    matrix_triple_multiply(Body->R, Body->b_vertex, temp_b);
-    matrix_triple_multiply(Body->R, Body->c_vertex, temp_c);
-    matrix_triple_multiply(Body->R, Body->d_vertex, temp_d);
+    matrix_triple_multiply(Body->R, Body->a_vertex, temp_a); // Перевод коориднат
+    matrix_triple_multiply(Body->R, Body->b_vertex, temp_b); // вершин из системы,
+    matrix_triple_multiply(Body->R, Body->c_vertex, temp_c); // жеско связанной с телом,
+    matrix_triple_multiply(Body->R, Body->d_vertex, temp_d); // в повернутую систему тела.
+
     switch (vertex)
     {
     case 'a':
-        if (temp_a[2] + Body->x[2] <= 0)
+        if (temp_a[2] + Body->x[2] <= 0)  // Перевод в мировую систему
             return 1;
         break;
     case 'b':
@@ -82,7 +63,7 @@ void pt_velocity(RigidBody *body, double* p, double res[3])
 int colliding(Contact *c)
 {
 
-    double t = 0.00001;
+    double t = 0.0000001;
 
     double padot[3], pbdot[3];
     pt_velocity(c->a, c->p, padot); /* p˙− a (t0 ) */
@@ -181,81 +162,62 @@ void collision(Contact *c, double epsilon)
 
 }
 
-
-void FindAllCollisions(Contact contacts[], int ncontacts)
+void compute_collision(RigidBody* Bodies, char vertex)
 {
-    int had_collision;
-    double epsilon = 1;
-    do {
-        had_collision = 0;
-        for(int i = 0; i < ncontacts; i++)
-            if(colliding(&contacts[i]))
-            {
-                collision(&contacts[i], epsilon);
-                had_collision = 1;
-                /* Tell the solver we had a collision */
-                //ode_discontinuous();
-            }
-    } while(had_collision == 1);
+
+    Contact c;  // Структура, хранящая данные о столкновении
+    c.a = &Bodies[0];  // Первое тело из пары
+    c.b = &Bodies[1];  // Второе тело из пары
+
+    c.n[0] = 0;  // Вектор нормали к плоскости столкновения
+    c.n[1] = 0;  // в рассматриваемой задаче является констнтой
+    c.n[2] = 1;  // нормаль к плоскости z = 0 (0;0;1)
+
+    double temp[3];  // Временная переменная для расчета координат вершин в мировой системе
+
+    switch (vertex)
+    {
+    case 'a':
+        matrix_triple_multiply(Bodies[0].R, Bodies[0].a_vertex, temp); // Перевод в мировую систему
+        vector_add(temp, Bodies[0].x, c.p);
+        break;
+    case 'b':
+        matrix_triple_multiply(Bodies[0].R, Bodies[0].b_vertex, temp);
+        vector_add(temp, Bodies[0].x, c.p);
+        break;
+    case 'c':
+        matrix_triple_multiply(Bodies[0].R, Bodies[0].c_vertex, temp);
+        vector_add(temp, Bodies[0].x, c.p);
+        break;
+    case 'd':
+        matrix_triple_multiply(Bodies[0].R, Bodies[0].d_vertex, temp);
+        vector_add(temp, Bodies[0].x, c.p);
+        break;
+    }
+    
+    if ( colliding(&c) )
+        collision(&c, 1);  // 1 - абсолютно упругий отскок, 0 - абсолютно неупругий.
+
 }
 
 
-void checking(RigidBody* Bodies)
+void check_and_compute_collision(RigidBody* Bodies)
 {
+
     if (check_vertex_collision(&Bodies[0], 'a'))
     {
-        double p[3];
-        Contact c;
-        c.a = &Bodies[0];
-        c.b = &Bodies[1];
-        c.n[0] = 0;
-        c.n[1] = 0;
-        c.n[2] = 1;
-        vector_add(Bodies[0].a_vertex, Bodies[0].x, p);
-        for (int i=0; i< 3; i++)
-            c.p[i] = p[i];
-        FindAllCollisions(&c, 1);
+        compute_collision(Bodies, 'a');
     }
     if (check_vertex_collision(&Bodies[0], 'b'))
     {
-        double p[3];
-        Contact c;
-        c.a = &Bodies[0];
-        c.b = &Bodies[1];
-        c.n[0] = 0;
-        c.n[1] = 0;
-        c.n[2] = 1;
-        vector_add(Bodies[0].b_vertex, Bodies[0].x, p);
-        for (int i=0; i< 3; i++)
-            c.p[i] = p[i];
-        FindAllCollisions(&c, 1);
+        compute_collision(Bodies, 'b');
     }
     if (check_vertex_collision(&Bodies[0], 'c'))
     {
-        double p[3];
-        Contact c;
-        c.a = &Bodies[0];
-        c.b = &Bodies[1];
-        c.n[0] = 0;
-        c.n[1] = 0;
-        c.n[2] = 1;
-        vector_add(Bodies[0].c_vertex, Bodies[0].x, p);
-        for (int i=0; i< 3; i++)
-            c.p[i] = p[i];
-        FindAllCollisions(&c, 1);
+        compute_collision(Bodies, 'c');
     }
     if (check_vertex_collision(&Bodies[0], 'd'))
     {
-        double p[3];
-        Contact c;
-        c.a = &Bodies[0];
-        c.b = &Bodies[1];
-        c.n[0] = 0;
-        c.n[1] = 0;
-        c.n[2] = 1;
-        vector_add(Bodies[0].d_vertex, Bodies[0].x, p);
-        for (int i=0; i< 3; i++)
-            c.p[i] = p[i];
-        FindAllCollisions(&c, 1);
+        compute_collision(Bodies, 'd');
     }
 }

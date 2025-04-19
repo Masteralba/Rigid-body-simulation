@@ -189,40 +189,6 @@ void normalize(double* v) {
     }
 }
 
-void orthogonalize_matrix(double matrix[9]) {
-    double *v1 = &matrix[0];
-    double *v2 = &matrix[3];
-    double *v3 = &matrix[6];
-    
-    // Нормализация первого вектора
-    normalize(v1);
-    
-    // Ортогонализация второго вектора относительно первого
-    double dot = v2[0]*v1[0] + v2[1]*v1[1] + v2[2]*v1[2];
-    v2[0] -= dot * v1[0];
-    v2[1] -= dot * v1[1];
-    v2[2] -= dot * v1[2];
-    normalize(v2);
-    
-    // Третий вектор как векторное произведение первых двух (чтобы обеспечить правую ориентацию)
-    v3[0] = v1[1]*v2[2] - v1[2]*v2[1];
-    v3[1] = v1[2]*v2[0] - v1[0]*v2[2];
-    v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
-    // Не нужно нормализовать, так как v1 и v2 уже ортонормированы
-    
-    // Проверка ориентации (чтобы определитель был +1)
-    double det = v1[0]*(v2[1]*v3[2] - v2[2]*v3[1]) -
-                 v1[1]*(v2[0]*v3[2] - v2[2]*v3[0]) +
-                 v1[2]*(v2[0]*v3[1] - v2[1]*v3[0]);
-    
-    if (det < 0) {
-        // Если ориентация отрицательная, инвертируем третий вектор
-        v3[0] = -v3[0];
-        v3[1] = -v3[1];
-        v3[2] = -v3[2];
-    }
-}
-
 
 double scalar_multiplication(double* a, double* b)
 {
@@ -346,4 +312,16 @@ void calculateTetrahedronInertia(double* a_v, double* b_v, double* c_v, double* 
     inertia_tensor[6] = -cp;  // [2][0]
     inertia_tensor[7] = -ap;  // [2][1]
     inertia_tensor[8] = c;    // [2][2]
+}
+
+
+double compute_body_energy(RigidBody* Body, double g)
+{
+    double en = scalar_multiplication(Body->L, Body->omega)/ 2;
+
+    double ek = scalar_multiplication(Body->v, Body->v)*Body->mass*0.5;
+
+    double u = Body->mass*Body->x[2]*g;
+
+    return en + ek + u;
 }

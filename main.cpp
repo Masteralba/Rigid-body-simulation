@@ -14,6 +14,8 @@ RigidBody Bodies[NBODIES]; // Глобальный массив тел
 
 double simulationTime = 0; // Глобальная переменная времени
 
+Rk4 rk4 = {NULL, NULL, NULL, NULL, NULL};  // Глобальная переменная структуры РК-4
+
 void RenderScene() // Находится здесь, потому что требует глобальную переменную Bodies
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -23,7 +25,7 @@ void RenderScene() // Находится здесь, потому что тре�
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(0.0, 5.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    gluLookAt(0.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
     GLfloat light_position[] = {5.0, 5.0, 5.0, 1.0};
     GLfloat light_color[] = {1.0, 1.0, 1.0, 1.0};
@@ -39,40 +41,25 @@ void RenderScene() // Находится здесь, потому что тре�
 }
 
 void update(int value) {
-
     
     glutPostRedisplay();  // вызывает функцию RenderScene
 
     double x0[STATE_SIZE * NBODIES], // Массив векторов состояний до шага моделирования
     xFinal[STATE_SIZE * NBODIES];   // Массив векторов состояний после шага моделирования
 
-    checking(Bodies);
+    check_and_compute_collision(Bodies);
 
-    BodiesToArray(x0, Bodies, NBODIES);
+    BodiesToArray(x0, Bodies, NBODIES);  // Представляем тела в виде вектора состояния
 
-    Rk4 rk4 = {NULL, NULL, NULL, NULL, NULL};
+    double dt = 1.0 / 30.0;   // Шаг симуляции
 
+    struct SimulationData data = {Bodies, NBODIES};  // Дополнительные данные для ode
 
+    ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data); // Выполняем шаг симуляции
 
-    double en = scalar_multiplication(Bodies[0].L, Bodies[0].omega)/ 2;
+    ArrayToBodies(xFinal, Bodies, NBODIES); // Записываем новый вектор состояния в тела
 
-    double ek = scalar_multiplication(Bodies[0].v, Bodies[0].v)*Bodies[0].mass*0.5;
-
-    double u = Bodies[0].mass*Bodies[0].x[2]*1/5;
-
-    printf("%.15e\n", en+ek+u);
-
-
-    double dt = 1.0 / 24.0;   // Шаг симуляции (1/24 секунды)
-
-    struct SimulationData data = {Bodies, NBODIES};
-
-    ode(&rk4, x0, xFinal, STATE_SIZE * NBODIES, simulationTime, simulationTime+dt, Dxdt, &data);
-    ArrayToBodies(xFinal, Bodies, NBODIES);
-
-    rk4Free(&rk4);
-
-    simulationTime += dt;     // Увеличиваем время симуляции
+    simulationTime += dt;  // Увеличиваем время симуляции
 
     // Планирование следующего вызова update через 16 мс (примерно 60 кадров в секунду)
     glutTimerFunc(16, update, 0);
@@ -94,5 +81,7 @@ int main(int argc, char** argv) {
     glutTimerFunc(0, update, 0);
 
     glutMainLoop();
+
+    rk4Free(&rk4);  // освобождение памяти из-под РК-4
  }
 
