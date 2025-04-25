@@ -10,3 +10,7 @@ Code implements **Perfect elastic collision**. Falling body is a general tetrahe
 Graphics is made with OpenGL:
 
 ![image](https://github.com/user-attachments/assets/a96e5287-e602-4a5f-9d61-7fae7c23cd43)
+
+command to run code:
+
+`make && ./rigid_body_simulation`
